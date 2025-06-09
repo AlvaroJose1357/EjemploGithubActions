@@ -1,27 +1,27 @@
-name: Deploy in github pages
+name: Deploy
 
-on:
-  push:
-    branches:
-      - main
+on: push
 
 jobs:
-  Build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Hola mundo
-        run: echo "Hola mundo"
+  build:
+    runs-on: ${{ matrix.os }}
 
-      - name: print variable
-        run: echo "La variable es ${{ secrets.MI_VARIABLE }}"
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [18, 20]
+
+    steps:
+      - name: Print variable
+        run: echo "${{ secrets.TOKEN_SECRECT }}"
 
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4.4.0
+      - name: setup
+        uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: ${{ matrix.node }}
 
       - name: Instalar dependencias
         run: npm install
@@ -33,16 +33,14 @@ jobs:
         run: npm run build
 
       - name: Upload artifact
-        # se hace deploy usando la acción de GitHub Pages
-        # https://github.com/marketplace/actions/upload-github-pages-artifact
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node == 18 }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: public/
 
-  Deploy:
-    # se hara el deploy usando https://github.com/marketplace/actions/deploy-github-pages-site
+  deploy:
     runs-on: ubuntu-latest
-    needs: Build
+    needs: build
 
     permissions:
       pages: write
@@ -53,6 +51,20 @@ jobs:
       url: ${{ steps.deployment-pages.outputs.page_url }}
 
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment-pages
         uses: actions/deploy-pages@v4
+
+  # notify:
+  #   runs-on: ubuntu-latest
+  #   needs: deploy
+  #   if: always()
+
+  #   steps:
+  #     - name: notify to slack
+  #       uses: 8398a7/action-slack@v3
+  #       env:
+  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK }}
+  #       with:
+  #         status: ${{ job.status }}
+  #         fields: repo,commit,author,job,took
