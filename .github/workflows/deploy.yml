@@ -11,3 +11,14 @@ jobs:
     steps:
       - name: Hola mundo
         run: echo "Hola mundo"
+
+      - name: print variable
+        run: echo "La variable es ${{ secrets.MI_VARIABLE }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "18"
