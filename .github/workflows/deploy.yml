@@ -1,0 +1,13 @@
+name: Deploy in github pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hola mundo
+        run: echo "Hola mundo"
